@@ -8,13 +8,15 @@ import {
     ForeignSet,
     fetch,
     CustomResolver,
-    scheduler
+    scheduler,
+    shallowMerge
 } from './utils';
 import Node from './graph-node';
 import ElectricNode from './electric-node';
 
 export default class Graph {
-    constructor () {
+    constructor (options) {
+        options = shallowMerge({}, { isPrintMode: false }, options);
         this.qualifiedNodeMap = {};
         this.retriever = fetch(this.qualifiedNodeMap);
         this.root = new Node(null, null, { retriever: this.retriever });
@@ -35,7 +37,7 @@ export default class Graph {
                 }
                 this.qualifiedNodeMap[qname].flush();
             }
-        });
+        }, options.isPrintMode);
     }
 
     createNodesFrom (obj, mount) {

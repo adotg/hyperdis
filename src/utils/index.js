@@ -16,12 +16,22 @@ const
     },
     minMsThreshold = 16,
     /* istanbul ignore next */win = typeof window === 'undefined' ? (this || {}) : window,
-    /* istanbul ignore next */ reqAnimFrame = win.requestAnimationFrame || win.webkitRequestAnimationFrame ||
-        win.mozRequestAnimationFrame || win.oRequestAnimationFrame ||
-        win.msRequestAnimationFrame ||
-        function (callback) {
-            setTimeout(callback, minMsThreshold);
-        },
+    // eslint-disable-next-line require-jsdoc
+    /* istanbul ignore next */ reqAnimFrame = (isPrintMode) => {
+        if (isPrintMode) {
+            return function (callback) {
+                setTimeout(callback, minMsThreshold);
+            };
+        }
+        return win.requestAnimationFrame ||
+            win.webkitRequestAnimationFrame ||
+            win.mozRequestAnimationFrame ||
+            win.oRequestAnimationFrame ||
+            win.msRequestAnimationFrame ||
+            function (callback) {
+                setTimeout(callback, minMsThreshold);
+            };
+    },
 
     getTimeBasedId = () => {
         if (getTimeBasedId.__lastTime === new Date().getTime()) {
@@ -81,7 +91,7 @@ const
             len = pathArr.length;
         return [pathArr.slice(0, len - 1), pathArr[len - 1]];
     },
-    scheduler = (onFinishCallback) => {
+    scheduler = (onFinishCallback, isPrintMode) => {
         let queue = [],
             animationFrame = null;
 
@@ -91,7 +101,7 @@ const
         return (listeners, payload) => {
             [].push.apply(queue, listeners);
             if (animationFrame === null) {
-                animationFrame = reqAnimFrame(() => {
+                animationFrame = reqAnimFrame(isPrintMode)(() => {
                     const tempQ = queue.slice(0);
                     queue.length = 0;
                     animationFrame = null;
@@ -169,6 +179,28 @@ function resolveDependencyOrder (node, resolved, resolveMap) {
     resolveMap[qname] = 1;
 }
 
+function shallowMerge(target, ...varArgs) {
+    if (target == null) { // TypeError if undefined or null
+        throw new TypeError('Cannot convert undefined or null to object');
+    }
+
+    let to = Object(target);
+
+    for (let index = 0; index < varArgs.length; index++) {
+        let nextSource = varArgs[index];
+
+        if (nextSource != null) { // Skip over if undefined or null
+            for (let nextKey in nextSource) {
+                // Avoid bugs when hasOwnProperty is shadowed
+                if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                    to[nextKey] = nextSource[nextKey];
+                }
+            }
+        }
+    }
+    return to;
+}
+
 class CustomResolver {
     constructor (resolver) {
         this.fn = resolver;
@@ -190,6 +222,7 @@ class CustomResolver {
 }
 
 export {
+    shallowMerge,
     isSimpleObject,
     scheduler,
     compose,

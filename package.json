@@ -2,7 +2,7 @@
   "name": "hyperdis",
   "description": "A high performance reactive state store for web apps",
   "homepage": "https://github.com/chartshq/hyperdis",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "MIT",
   "main": "dist/hyperdis.js",
   "author": "Charts.com <support@charts.com>",
