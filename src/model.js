@@ -1,5 +1,5 @@
 import Graph from './graph';
-import { CustomResolver, fetchAggregator } from './utils';
+import { CustomResolver, fetchAggregator, shallowMerge } from './utils';
 
 /**
  * The container class for Hyperdis. Hyperdis is an enabler for observable object with few interesting features like,
@@ -12,9 +12,12 @@ import { CustomResolver, fetchAggregator } from './utils';
  * @example check src/index.spec.js
  * @class
  */
+
 class Model {
-    constructor () {
-        this._graph = new Graph();
+    // eslint-disable-next-line require-jsdoc
+    constructor (options) {
+        options = shallowMerge({}, { isPrintMode: false }, options);
+        this._graph = new Graph(options);
         this._lockFlag = false;
         this._reqQ = [];
     }
@@ -25,8 +28,8 @@ class Model {
      * @param {Object} obj The target object which is required to be made observable
      * @return {Model} instance of the observable object model
      */
-    static create (obj) {
-        return new Model()._addPropInModel(null, obj);
+    static create (obj, options) {
+        return new Model(options)._addPropInModel(null, obj);
     }
 
     /**
